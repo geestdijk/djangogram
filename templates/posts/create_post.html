@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% load bootstrap4 %}
+
+{% block content %}
+<div class="container">
+<form id="post_form" method="post" action="" enctype="multipart/form-data">
+
+    {% csrf_token %}
+    {% for hidden in postForm.hidden_fields %}
+        {% bootstrap_field hidden %}
+    {% endfor %}
+
+    {% bootstrap_field postForm.title %}
+    {% bootstrap_field postForm.message %}
+
+    {% bootstrap_form formset.management_form %}
+    {% for form in formset %}
+    <label class="btn btn-outline-secondary btn-lg">
+        {{ form }}
+    </label>
+    {% endfor %}
+    {% bootstrap_button "Submit" button_type="submit" button_class="btn-primary" %}
+</form>
+</div>
+{% endblock content %}

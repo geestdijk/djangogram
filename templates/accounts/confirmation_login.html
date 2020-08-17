@@ -1,0 +1,13 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+<div>
+    <h1>Please enter your password to confirm your email and login:</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit">
+    </form>
+</div>
+{% endblock content %}

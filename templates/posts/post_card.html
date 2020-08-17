@@ -1,0 +1,49 @@
+<div class="card card text-center mb-4">
+    <div class="card-header">
+      <h4>{{ post.title }}</h4>
+    </div>
+    <div
+      id="slider{{ forloop.counter0 }}"
+      class="carousel slide mb-5"
+      data-ride="carousel"
+    >
+      <div class="carousel-inner">
+        {% for image in post.images.all %} {% if forloop.first %}
+        <div class="carousel-item active p-2">
+          <img class="card-img-top" src="{{ image.image.url }}" alt="" />
+        </div>
+        {% else %}
+        <div class="carousel-item p-2">
+          <img class="card-img-top" src="{{ image.image.url }}" alt="" />
+        </div>
+        {% endif %} {% endfor %}
+      </div>
+
+      <!-- CONTROLS -->
+      <a
+        href="#slider{{ forloop.counter0 }}"
+        class="carousel-control-prev"
+        data-slide="prev"
+      >
+        <span class="carousel-control-prev-icon"></span>
+      </a>
+
+      <a
+        href="#slider{{ forloop.counter0 }}"
+        class="carousel-control-next"
+        data-slide="next"
+      >
+        <span class="carousel-control-next-icon"></span>
+      </a>
+    </div>
+    <div class="card-body">
+      <p class="card-text">{{ post.message }}</p>
+    </div>
+    <div class="card-footer">
+      <div style='color:grey'>{{ post.days_since_created }}</div>
+      <a style='color:grey' href="{% url 'auth:single' pk=post.user.id %}">by {{ post.user.name }}</a>
+    </div>
+    <div class="card-footer">
+      {% include "posts/votes.html" with post=post %}
+    </div>
+  </div>
