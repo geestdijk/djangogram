@@ -27,16 +27,29 @@ class UserProfileFactory(factory.django.DjangoModelFactory):
 
 
 class PostFactory(factory.django.DjangoModelFactory):
-
     class Meta:
         model = Post
 
+    @classmethod
+    def _create(cls, target_class, *args, **kwargs):
+        created_at = kwargs.pop('created_at', None)
+        print(created_at)
+        updated_at = kwargs.pop('updated_at', None)
+        print(updated_at)
+        obj = super(PostFactory, cls)._create(target_class, *args, **kwargs)
+        if created_at is not None:
+            obj.created_at = created_at
+        if updated_at is not None:
+            obj.updated_at = updated_at
+        obj.save()
+        return obj
+  
     title = factory.Sequence(lambda n: f'post{n} title')
     message = factory.Sequence(lambda n: f'post{n} message')
-    created_at = datetime.datetime.now()
-    updated_at = datetime.datetime.now()
     user = factory.SubFactory(UserProfileFactory)
-
+    created_at = factory.Sequence(lambda n: datetime.datetime(2020,7,25,14,n,0,0))
+    updated_at = factory.LazyAttribute(lambda o: o.created_at)
+    
 
 class ImageFactory(factory.django.DjangoModelFactory):
     class Meta:
