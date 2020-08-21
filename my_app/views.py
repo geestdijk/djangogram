@@ -33,9 +33,7 @@ class SignUpView(CreateView):
             form = SignUpForm()
             return render(request, 'accounts/signup.html', {'form': form})
         user = form.save(commit=False)
-        group = Group.objects.get(name='ReadOnly')
         user.save()
-        user.groups.add(group)
         current_site = get_current_site(request)
         email_subject = 'Confirm you email address'
         message = render_to_string('accounts/activate_account.html', {
@@ -53,7 +51,17 @@ please confirm your email address to complete registration'''
         return redirect(reverse('auth:login'))
 
 
-class UserProfileWithPostsView(ListView):
+class UserPostsMixin():
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        self.is_users_page = self.post_user.id == self.request.user.id
+        context['post_user'] = self.post_user
+        context['is_users_page'] = self.is_users_page
+        return context
+
+
+class UserProfileWithPostsView(UserPostsMixin, ListView):
     template_name = 'accounts/profile.html'
 
     def get_queryset(self):
@@ -61,7 +69,6 @@ class UserProfileWithPostsView(ListView):
             self.post_user = UserProfile.objects.prefetch_related('posts').get(
                 pk=self.kwargs.get('pk')
             )
-            self.can_upload_avatar = self.post_user.id == self.request.user.id
         except UserProfile.DoesNotExist:
             raise Http404
         else:
@@ -71,8 +78,6 @@ class UserProfileWithPostsView(ListView):
         context = super().get_context_data(**kwargs)
         context['object'] = UserProfile.objects.get(
             pk=self.kwargs.get('pk'))
-        context['post_user'] = self.post_user
-        context['can_upload_avatar'] = self.can_upload_avatar
         return context
 
 
@@ -80,22 +85,16 @@ class ConfirmEmailView(LoginView):
     template_name = 'accounts/confirmation_login.html'
     authentication_form = ConfirmRegistrationForm
 
-    def change_from_read_only_to_member(self, user):
-        read_only_group = Group.objects.get(name='ReadOnly')
-        read_only_group.user_set.remove(user)
-        user.groups.add(Group.objects.get(name='Member'))
-        user.save()
-
     def get(self, request, uidb64, *args, **kwargs):
         user = request.user
         user_groups = user.groups
         if user_groups.filter(name='Member').exists():
-            messages.info(self.request, 'You email is alredy confirmed.')
+            messages.info(self.request, 'You email is already confirmed.')
             return redirect(reverse('home'))
         elif not user.is_authenticated:
             return self.render_to_response(self.get_context_data())
-        elif user_groups.filter(name='ReadOnly').exists():
-            self.change_from_read_only_to_member(user)
+        elif not user_groups.filter(name='Member').exists():
+            user.groups.add(Group.objects.get(name='Member'))
             return HttpResponse('Your email has been confirmed.')
 
     def get_form_kwargs(self):
@@ -111,7 +110,7 @@ class ConfirmEmailView(LoginView):
             user = UserProfile.objects.get(email=form.email)
             if 'Member' in user.groups.values_list('name', flat=True):
                 return HttpResponse('You email is already confirmed.')
-            self.change_from_read_only_to_member(user)
+            user.groups.add(Group.objects.get(name='Member'))
             return self.form_valid(form)
         return self.form_invalid(form)
 
@@ -128,16 +127,13 @@ class UpdateAvatarView(UpdateView):
         return UserProfile.objects.get(pk=self.request.user.id)
 
     def form_valid(self, form):
-        cloudinary.uploader.destroy(UserProfile.objects.get(pk=self.object.id).
-                                    avatar.public_id, invalidate=True)
+        user = UserProfile.objects.get(pk=self.object.id)
+        if user.avatar:
+            cloudinary.uploader.destroy(user.avatar.public_id, invalidate=True)
         return super().form_valid(form)
 
 
-class PostList(generic.ListView):
-    model = Post
-
-
-class UserPosts(generic.ListView):
+class UserPosts(UserPostsMixin, generic.ListView):
     template_name = 'posts/user_post_list.html'
 
     def get_queryset(self):
@@ -145,18 +141,12 @@ class UserPosts(generic.ListView):
             self.post_user = UserProfile.objects.prefetch_related('posts').get(
                 pk=self.kwargs.get('user_pk')
             )
-            self.can_add_new_post = self.request.user.id == self.post_user.id
+            self.is_users_page = self.request.user.id == self.post_user.id
         except UserProfile.DoesNotExist:
             raise Http404
         else:
             return self.post_user.posts.single_user_posts(self.post_user)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['post_user'] = self.post_user
-        context['can_add_new_post'] = self.can_add_new_post
-        return context
-
+            
 
 class HomePageFeedView(generic.ListView):
     template_name = 'index.html'

@@ -31,8 +31,7 @@ class PostImageForm(forms.ModelForm):
         user_id = kwargs.pop('user_id', None)
         post_id = kwargs.pop('post_id', None)
         super().__init__(*args, **kwargs)
-        self.fields['image'].options['folder'] = 'posts_images/user_{}/post_{}'.format(
-            user_id, post_id)
+        self.fields['image'].options['folder'] = f'posts_images/user_{user_id}/post_{post_id}'
 
     image = CloudinaryFileField(
         options={
@@ -76,8 +75,8 @@ class ConfirmRegistrationForm(AuthenticationForm):
 class UpdateAvatarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['avatar'].options['folder'] = 'avatar/user_{}'.format(
-            kwargs['instance'].id)
+        user_id = kwargs['instance'].id
+        self.fields['avatar'].options['folder'] = f'avatar/user_{user_id}'
 
     avatar = CloudinaryFileField(
         options={

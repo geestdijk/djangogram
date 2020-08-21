@@ -13,6 +13,8 @@ if hasattr(settings, 'LOGIN_EXEMPT_URLS'):
 if hasattr(settings, 'MEMBER_EXEMPT_URLS'):
     MEMBER_EXEMPT_URLS = [re.compile(url)
                           for url in settings.MEMBER_EXEMPT_URLS]
+if hasattr(settings, 'MEMBER_EXEMPT_URLS'):
+    CONFIRM_EMAIL_URL = re.compile(settings.CONFIRM_EMAIL_URL)
 
 
 class MembershipRequiredMiddleware:
@@ -29,18 +31,25 @@ class MembershipRequiredMiddleware:
         url_is_login_exempt = any(url.match(path) for url in EXEMPT_URLS)
         url_is_member_exempt = any(url.match(path)
                                    for url in MEMBER_EXEMPT_URLS)
+        url_is_confirm_email = CONFIRM_EMAIL_URL.match(path)
         current_user_is_member = request.user.groups.filter(
             name='Member').exists()
 
         if path == reverse('auth:logout').lstrip('/'):
-            logout(request)
+            logout(request)  
+        
 
-        if url_is_login_exempt and request.user.is_authenticated:
+        if url_is_confirm_email:
+            return
+        elif url_is_login_exempt and request.user.is_authenticated:
             return redirect(settings.LOGIN_REDIRECT_URL)
+        elif current_user_is_member or url_is_login_exempt:
+            return
         elif request.user.is_authenticated and url_is_member_exempt\
                 and not current_user_is_member:
-            return HttpResponse('Please confirm your email')
-        elif current_user_is_member or url_is_login_exempt or request.user.is_authenticated:
             return
+        elif request.user.is_authenticated and not url_is_member_exempt\
+                and not current_user_is_member:
+            return HttpResponse('Please confirm your email')
         else:
             return redirect(settings.LOGIN_URL)

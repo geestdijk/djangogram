@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.postgres',
+    'django.contrib.humanize',
     # third-party apps
     'bootstrap4',
     'cloudinary',
@@ -140,9 +141,11 @@ LOGIN_EXEMPT_URLS = (
     r'^auth/signup/$',
 )
 
+CONFIRM_EMAIL_URL = r'^auth/activate/(?P<uidb64>[0-9A-Za-z_\-]+)/$'
+
 MEMBER_EXEMPT_URLS = (
-    r'^posts/new/$',
-    r'^auth/(?P<pk>[0-9A-Za-z_\-]+)/$',
+    r'^auth/logout/$',
+    r'^$',
 )
 
 # EMAIL CONFIG

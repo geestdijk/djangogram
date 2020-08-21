@@ -8,13 +8,7 @@ from django.contrib.auth.models import (AbstractBaseUser,
                                         Group)
 from django.db import models
 from django.db.models import Count, Q, Exists, OuterRef, Sum
-
-
-def directory_path(instance, filename):
-    if isinstance(instance, Image):
-        return f'user_images/user_{instance.user.id}/'
-    elif isinstance(instance, UserProfile):
-        return f'profile_pics/user_{instance.id}/'
+from django.utils import timezone
 
 
 class UserProfileManager(BaseUserManager):
@@ -87,19 +81,10 @@ class Post(models.Model):
         UserProfile, related_name='posts', on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def days_since_created(self):
-        if self.created_at.date() == date.today():
-            return "Today"
-        days = (datetime.now(timezone.utc) - self.created_at).days
-        if days < 2:
-            return str(days) + " day ago"
-        return str(days) + " days ago"
+    created_at = models.DateTimeField(default=timezone.now, editable=False)
+    updated_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        ordering = ['-created_at']
         unique_together = ['user', 'message']
 
     objects = PostManager()
@@ -123,7 +108,7 @@ class LikeDislikeManager(models.Manager):
     use_for_related_fields = True
 
     def likes(self):
-        return self.get_queryset().filter(vote__lt=0)
+        return self.get_queryset().filter(vote__gt=0)
 
     def dislikes(self):
         return self.get_queryset().filter(vote__lt=0)
@@ -148,7 +133,7 @@ class LikeDislike(models.Model):
         Post, on_delete=models.CASCADE, related_name='votes')
 
     def __str__(self):
-        return f'{self.user}:{self.post}:{self.vote}'
+        return f'{self.user}:post{self.post.id}:{self.vote}'
 
     class Meta:
         unique_together = ("user", "post", "vote")

@@ -3,7 +3,7 @@
 {% load bootstrap4 %} 
 {% block content %}
 
-{% if can_add_new_post %}
+{% if is_users_page %}
 <div class="container container-sm">
   <a class="btn btn-primary mb-4" href="{% url 'posts:create' %}" role="button"
     >New Post</a

@@ -1,3 +1,5 @@
+{% load humanize %}
+
 <div class="card card text-center mb-4">
     <div class="card-header">
       <h4>{{ post.title }}</h4>
@@ -40,7 +42,7 @@
       <p class="card-text">{{ post.message }}</p>
     </div>
     <div class="card-footer">
-      <div style='color:grey'>{{ post.days_since_created }}</div>
+      <div style='color:grey'>{{ post.created_at|naturalday }}</div>
       <a style='color:grey' href="{% url 'auth:single' pk=post.user.id %}">by {{ post.user.name }}</a>
     </div>
     <div class="card-footer">
