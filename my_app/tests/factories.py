@@ -1,8 +1,6 @@
 import datetime
 import pytz
-from unittest.mock import Mock
 
-from django.contrib.auth.models import Group
 import factory
 
 from ..models import UserProfile, Post, Image, LikeDislike
@@ -39,8 +37,8 @@ class PostFactory(factory.django.DjangoModelFactory):
     message = factory.Sequence(lambda n: f'post{n} message')
     user = factory.SubFactory(UserProfileFactory)
     created_at = factory.Sequence(lambda n: datetime.datetime(2020, 7, 25,
-                                                              hour=14, minute=n, 
-                                                              second=0, microsecond=0, 
+                                                              hour=14, minute=n,
+                                                              second=0, microsecond=0,
                                                               tzinfo=utc_timezone))
     updated_at = factory.LazyAttribute(lambda o: o.created_at)
 

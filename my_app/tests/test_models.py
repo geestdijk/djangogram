@@ -1,5 +1,4 @@
 import datetime
-from unittest import mock
 
 import pytest
 
@@ -25,22 +24,19 @@ class TestModels:
         assert user_created_by_manager.name == 'Default User'
         assert user_created_by_manager.email == 'default_user@example.com'
         assert user_created_by_manager.check_password('default_user_password')
-        assert user_created_by_manager.is_active == True
-        assert user_created_by_manager.is_superuser == False
-        assert user_created_by_manager.is_staff == False
+        assert user_created_by_manager.is_active
+        assert not user_created_by_manager.is_superuser
+        assert not user_created_by_manager.is_staff
         assert models.UserProfile.objects.count() == 1
-
 
     def test_create_user_without_email(self):
         with pytest.raises(ValueError):
             models.UserProfile.objects.create_user(name='some_user', email=None)
 
-
     def test_superuser_manager(self, member_group_fixture, superuser_created_by_manager):
-        assert superuser_created_by_manager.is_superuser == True
-        assert superuser_created_by_manager.is_staff == True
+        assert superuser_created_by_manager.is_superuser
+        assert superuser_created_by_manager.is_staff
         assert superuser_created_by_manager.groups.first().name == 'Member'
-
 
     @pytest.mark.parametrize(
         'date_created',
@@ -58,7 +54,6 @@ class TestModels:
         assert post.created_at == date_created
         assert post.updated_at == date_created
 
-
     def test_create_image(self):
         my_image = ImageFactory.build()
         assert my_image.user.email == 'test_user1@example.com'
@@ -66,14 +61,12 @@ class TestModels:
         assert my_image.image.name == 'example.jpg'
         assert my_image.description == 'image1 description'
 
-
     def test_likedislike(self):
         PostFactory.reset_sequence(1)
         UserProfileFactory.reset_sequence(1)
         likedislike = LikeDislikeFactory.create()
         assert models.LikeDislike.objects.all().count() == 1
         assert str(likedislike) == 'test_user1@example.com:post1:1'
-        
 
     def test_likedislike_manager(self):
         post = PostFactory.create()
@@ -83,4 +76,3 @@ class TestModels:
         assert post.votes.likes().count() == 3
         assert post.votes.dislikes().count() == 2
         assert post.votes.sum_rating() == 1
-            

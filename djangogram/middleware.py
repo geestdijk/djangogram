@@ -36,8 +36,7 @@ class MembershipRequiredMiddleware:
             name='Member').exists()
 
         if path == reverse('auth:logout').lstrip('/'):
-            logout(request)  
-        
+            logout(request)
 
         if url_is_confirm_email:
             return

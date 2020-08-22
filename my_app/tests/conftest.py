@@ -1,9 +1,8 @@
 from django.contrib.auth.models import Group
 import pytest
-from pytest_factoryboy import register
 
 from . import factories
-from ..models import UserProfile, Post
+from ..models import UserProfile
 
 
 @pytest.fixture(autouse=True, scope='function')

@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.views import generic
 from django.urls import reverse
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic import CreateView, ListView, UpdateView
 
@@ -89,7 +89,7 @@ class ConfirmEmailView(LoginView):
         user = request.user
         user_groups = user.groups
         if user_groups.filter(name='Member').exists():
-            messages.info(self.request, 'You email is already confirmed.')
+            messages.info(self.request, 'Your email is already confirmed.')
             return redirect(reverse('home'))
         elif not user.is_authenticated:
             return self.render_to_response(self.get_context_data())
@@ -98,7 +98,7 @@ class ConfirmEmailView(LoginView):
             return HttpResponse('Your email has been confirmed.')
 
     def get_form_kwargs(self):
-        self.email_from_link = force_text(
+        self.email_from_link = force_str(
             urlsafe_base64_decode(self.kwargs['uidb64']))
         kwargs = super(ConfirmEmailView, self).get_form_kwargs()
         kwargs.update({'email_from_link': self.email_from_link})
@@ -109,7 +109,7 @@ class ConfirmEmailView(LoginView):
         if form.is_valid():
             user = UserProfile.objects.get(email=form.email)
             if 'Member' in user.groups.values_list('name', flat=True):
-                return HttpResponse('You email is already confirmed.')
+                return HttpResponse('Your email is already confirmed.')
             user.groups.add(Group.objects.get(name='Member'))
             return self.form_valid(form)
         return self.form_invalid(form)
@@ -146,7 +146,6 @@ class UserPosts(UserPostsMixin, generic.ListView):
             raise Http404
         else:
             return self.post_user.posts.single_user_posts(self.post_user)
-            
 
 class HomePageFeedView(generic.ListView):
     template_name = 'index.html'
@@ -194,8 +193,12 @@ def create_post(request):
 class VotesView(generic.View):
     vote_type = None
 
-    def post(self, request, pk):
+    def post(self, request, pk, vote):
         obj = Post.objects.get(id=pk)
+        if vote == 'like':
+            self.vote_type = LikeDislike.LIKE
+        elif vote == 'dislike':
+            self.vote_type = LikeDislike.DISLIKE
         try:
             likedislike = LikeDislike.objects.get(post=obj, user=request.user)
             if likedislike.vote is not self.vote_type:

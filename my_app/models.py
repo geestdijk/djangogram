@@ -1,5 +1,3 @@
-from datetime import timezone, date, datetime
-
 import cloudinary.uploader
 from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import (AbstractBaseUser,

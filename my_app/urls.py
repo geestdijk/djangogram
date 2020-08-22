@@ -2,7 +2,6 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path, re_path
 
 from . import views
-from .models import LikeDislike
 
 
 auth_patterns = ([
@@ -28,13 +27,10 @@ post_patterns = ([
 
 
 vote_patterns = ([
-    re_path(r'^post/(?P<pk>\d+)/like/$',
-            views.VotesView.as_view(vote_type=LikeDislike.LIKE),
-            name='post_like'),
-    re_path(r'^post/(?P<pk>\d+)/dislike/$',
-            views.VotesView.as_view(vote_type=LikeDislike.DISLIKE),
-            name='post_dislike'),
-], 'vote')
+    re_path(r'^post/(?P<pk>\d+)/(?P<vote>[A-Za-z_\-]+)/$',
+            views.VotesView.as_view(),
+            name='vote'),
+], 'votes')
 
 urlpatterns = [
     path('posts/', include(post_patterns)),
