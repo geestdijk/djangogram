@@ -36,4 +36,5 @@ urlpatterns = [
     path('posts/', include(post_patterns)),
     path('auth/', include(auth_patterns)),
     path('api/', include(vote_patterns)),
+    path('social-auth/', include('social_django.urls', namespace='social')),
 ]

@@ -147,6 +147,7 @@ class UserPosts(UserPostsMixin, generic.ListView):
         else:
             return self.post_user.posts.single_user_posts(self.post_user)
 
+
 class HomePageFeedView(generic.ListView):
     template_name = 'index.html'
 

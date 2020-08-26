@@ -20,6 +20,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', ]
 # Application definition
 
 INSTALLED_APPS = [
+    'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -31,6 +32,7 @@ INSTALLED_APPS = [
     'bootstrap4',
     'cloudinary',
     'debug_toolbar',
+    'social_django',
     # my apps
     'my_app',
 ]
@@ -60,6 +62,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -124,7 +128,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
@@ -134,11 +138,17 @@ AUTH_USER_MODEL = 'my_app.UserProfile'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
+
 LOGIN_URL = '/auth/login/'
+
 
 LOGIN_EXEMPT_URLS = (
     r'^auth/logout/$',
     r'^auth/signup/$',
+    r'^social-auth/login/github/$',
+    r'^social-auth/complete/github/$',
+    r'^email/$',
+    r'^email-sent/$',
 )
 
 CONFIRM_EMAIL_URL = r'^auth/activate/(?P<uidb64>[0-9A-Za-z_\-]+)/$'
@@ -163,3 +173,29 @@ cloudinary.config(
     api_secret=config('CLOUD_API_SECRET'),
     secure=True
 )
+
+# SOCIAL-AUTH-APP-DJANGO SETTINGS
+SOCIAL_AUTH_POSTGRES_JSONFIELD = True
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.github.GithubOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+SOCIAL_AUTH_GITHUB_KEY = 'e8bda7244bc07995dd2a'
+SOCIAL_AUTH_GITHUB_SECRET = 'd78dbfb88ef5f8a5848677434d691ad6bb7f0687'
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'my_app.social_auth.custom_social_auth_pipeline.require_email',
+    'social_core.pipeline.mail.mail_validation',
+    'social_core.pipeline.social_auth.associate_by_email',
+    'social_core.pipeline.user.create_user',
+    'my_app.social_auth.custom_social_auth_pipeline.add_member_group_to_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
+SOCIAL_AUTH_FORCE_EMAIL_VALIDATION = True
+SOCIAL_AUTH_EMAIL_VALIDATION_FUNCTION = 'my_app.social_auth.email.send_validation'
+SOCIAL_AUTH_EMAIL_VALIDATION_URL = '/email-sent/'
