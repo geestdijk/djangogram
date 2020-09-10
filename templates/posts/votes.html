@@ -1,0 +1,39 @@
+{% load bootstrap4 %}
+
+<a style="color: grey;" href="#" onClick="document.getElementById('likebutton{{post.id}}').submit()"
+  >{% if post.liked_by_user %}
+  <ion-icon name="thumbs-up"></ion-icon>
+  {% else %}
+  <ion-icon name="thumbs-up-outline"></ion-icon>
+  {% endif %}
+  {{ post.votes_count_likes }} </a
+>
+&nbsp;
+<a style="color: grey"
+  href="#"
+  onClick="document.getElementById('dislikebutton{{post.id}}').submit()"
+  >{% if post.disliked_by_user %}
+  <ion-icon name="thumbs-down"></ion-icon>
+  {% else %}
+  <ion-icon name="thumbs-down-outline"></ion-icon>
+  {% endif %}
+  {{ post.votes_count_dislikes }} </a
+>
+
+<form
+  id="likebutton{{post.id}}"
+  method="POST"
+  action="/api/post/{{post.id}}/like/"
+>
+  {% csrf_token %}
+  <input type="hidden"/>
+</form>
+
+<form
+  id="dislikebutton{{post.id}}"
+  method="POST"
+  action="/api/post/{{post.id}}/dislike/"
+>
+  {% csrf_token %}
+  <input type="hidden"/>
+</form>

@@ -1,0 +1,17 @@
+{% extends "base.html" %} 
+
+{% block content %} 
+<div class="container">
+    {{ object.title }} <br>
+    {{ object.message }} <br>
+    by {{ object.user.name}}
+    <ul>
+    {% for image in object.images.all %}
+        <li>
+            <img src="{{ image.image.url }}" class="img-thumbnail" width="400px">
+        </li>
+    {% endfor %}
+    </ul>
+</div>
+
+{% endblock content %}
